@@ -1,12 +1,8 @@
-const CACHE_NAME = 'math-adventure-10-weeks-v9';
+const CACHE_NAME = 'math-adventure-10-weeks-v10';
 const APP_SHELL = [
+  './index.html',
   './math-adventure-10-weeks.html',
   './math-adventure-demo.html',
-  './manifest.webmanifest',
-  './icons/app-icon-180.png',
-  './icons/app-icon-192.png',
-  './icons/app-icon-512.png',
-  './icons/app-icon-maskable-512.png'
 ];
 
 self.addEventListener('install', event=>{
