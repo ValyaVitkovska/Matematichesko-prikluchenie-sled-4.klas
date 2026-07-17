@@ -823,32 +823,17 @@
     line-height:1;
   }
   td.vcell.borrow-editable{ position:relative; overflow:visible; }
-  .borrow-input-dot{
+  td.vcell.borrow-editable.has-value input{ cursor:pointer; }
+  td.vcell.borrow-editable.has-dot::after{
+    content:"•";
     position:absolute;
     z-index:2;
-    top:-10px;
-    right:-4px;
-    width:20px;
-    height:20px;
-    min-height:20px!important;
-    padding:0;
-    border:1px solid #d6d9e3;
-    border-radius:50%;
-    background:#fff;
-    color:#9aa0ad;
-    font:900 1rem/17px Arial,sans-serif;
-    cursor:pointer;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .15s,color .15s,border-color .15s,transform .15s;
-  }
-  td.vcell.borrow-editable.has-value .borrow-input-dot{ opacity:1; pointer-events:auto; }
-  td.vcell.borrow-editable.has-dot .borrow-input-dot{
+    top:-11px;
+    right:7px;
     color:#e74c3c;
-    border-color:#e74c3c;
-    transform:scale(1.08);
+    font:900 1.25rem/1 Arial,sans-serif;
+    pointer-events:none;
   }
-  .borrow-input-dot:focus-visible{ outline:3px solid rgba(108,92,231,.25); outline-offset:1px; }
   td.vcell.op{ font-size:1.15rem; color:#555; }
   td.lineline{ border-top:2.5px solid #444; padding:0; height:4px; }
 
@@ -1544,7 +1529,7 @@ function renderVertical(op, a, b){
   cellsA.forEach(c=>{
     if(c === 'EDIT'){
       html += isSub
-        ? `<td class="vcell borrow-editable"><input class="step-operand-input" type="text" inputmode="numeric" maxlength="1" aria-label="Цифра от междинния резултат"/><button type="button" class="borrow-input-dot" aria-label="Постави или премахни точка над въведената цифра" aria-pressed="false" title="Точка при заемане">•</button></td>`
+        ? `<td class="vcell borrow-editable"><input class="step-operand-input" type="text" inputmode="numeric" maxlength="1" aria-label="Цифра от междинния резултат. Докосни отново въведената цифра, за да отбележиш заемане."/></td>`
         : `<td class="vcell"><input class="step-operand-input" type="text" inputmode="numeric" maxlength="1" aria-label="Цифра от междинния резултат"/></td>`;
     } else if(c === ''){
       html += `<td></td>`;
@@ -1576,7 +1561,7 @@ function renderVertical(op, a, b){
 
   html += `</tbody></table>`;
   if(isSub){
-    html = `<div class="scratch-hint">✏️ Ако вземаш назаем: кликни готовата цифра или малката точка над въведена от теб цифра. После запиши <b>10</b> в квадратчето точно над цифрата, от която вземаш.</div>` + html;
+    html = `<div class="scratch-hint">✏️ Ако вземаш назаем: кликни готовата цифра или докосни отново цифрата, която си въвел. Точката ще се появи едва тогава. После запиши <b>10</b> в квадратчето точно над цифрата, от която вземаш.</div>` + html;
   }
   return html;
 }
@@ -1639,6 +1624,26 @@ function renderDivisionTail(a, b){
   </div>`;
 }
 
+function renderBlankDivision(){
+  const numberBoxes=(count,label)=>Array.from({length:count},(_,index)=>
+    `<input class="division-input step-operand-input" type="text" inputmode="numeric" maxlength="1" aria-label="${label}, цифра ${index+1}">`
+  ).join('');
+  const resultBoxes=Array.from({length:4},(_,index)=>
+    `<input class="division-input step-result-input" type="text" inputmode="numeric" maxlength="1" aria-label="Цифра ${index+1} от частното">`
+  ).join('');
+  return `<div class="division-tail-card blank-division-card">
+    <div class="division-tail-title">Деление</div>
+    <div class="scratch-hint">✏️ Детето само избира и записва делимото и делителя от условието, а след това пресмята частното.</div>
+    <div class="division-equation">
+      <span class="division-quotient">${numberBoxes(4,'Делимо')}</span>
+      <span>:</span>
+      <span class="division-quotient">${numberBoxes(2,'Делител')}</span>
+      <span>=</span>
+      <span class="division-quotient">${resultBoxes}</span>
+    </div>
+  </div>`;
+}
+
 function renderSubPanel(spec){
   if(spec[0] === '+' || spec[0] === '-') return renderVertical(spec[0], spec[1], spec[2]);
   if(spec[0] === '*'){
@@ -1663,7 +1668,9 @@ function renderSubPanel(spec){
         <span class="multiplication-digits multiplication-product">${productBoxes}</span>
       </div>`;
   }
-  if(spec[0] === '/') return renderDivisionTail(spec[1], spec[2]);
+  if(spec[0] === '/') return spec[1] === null || spec[2] === null
+    ? renderBlankDivision()
+    : renderDivisionTail(spec[1], spec[2]);
   return '';
 }
 
@@ -1737,6 +1744,18 @@ function renderScratch(spec,unitGate){
   </div>`;
 }
 
+function blankScratchOperands(spec){
+  if(!Array.isArray(spec)) return spec;
+  if(spec[0] === 'steps'){
+    return ['steps',spec[1].map(step=>{
+      if(!Array.isArray(step) || step[0] === 'note') return step;
+      return [step[0],null,null];
+    })];
+  }
+  if(['+','-','*','/'].includes(spec[0])) return [spec[0],null,null];
+  return spec;
+}
+
 function wireScratchPanel(panelEl){
   const unitGate=panelEl.querySelector('.unit-gate');
   if(unitGate){
@@ -1786,25 +1805,23 @@ function wireScratchPanel(panelEl){
   });
   panelEl.querySelectorAll('.borrow-editable').forEach(cell=>{
     const input=cell.querySelector('input');
-    const dotButton=cell.querySelector('.borrow-input-dot');
+    let wasFocusedBeforeTap=false;
     const syncValue=()=>{
       const hasValue=input.value.trim()!=='';
       cell.classList.toggle('has-value',hasValue);
       if(!hasValue){
         cell.classList.remove('has-dot');
-        dotButton.setAttribute('aria-pressed','false');
       }
     };
     input.addEventListener('input',syncValue);
-    dotButton.addEventListener('click',event=>{
-      event.preventDefault();
-      event.stopPropagation();
-      if(input.value.trim()===''){
-        input.focus();
-        return;
+    input.addEventListener('pointerdown',()=>{
+      wasFocusedBeforeTap=document.activeElement===input;
+    });
+    input.addEventListener('click',()=>{
+      if(wasFocusedBeforeTap && input.value.trim()!==''){
+        cell.classList.toggle('has-dot');
       }
-      const active=cell.classList.toggle('has-dot');
-      dotButton.setAttribute('aria-pressed',String(active));
+      wasFocusedBeforeTap=false;
     });
     syncValue();
   });
@@ -1856,8 +1873,10 @@ function operationSymbol(op){
 }
 
 function operationSequenceFor(question){
-  if(Array.isArray(question.opSequence) && question.opSequence.length) return question.opSequence;
-  return question.opFor ? [question.opFor] : [];
+  const sequence=Array.isArray(question.opSequence) && question.opSequence.length
+    ? question.opSequence
+    : (question.opFor ? [question.opFor] : []);
+  return question.firstOperationOnly ? sequence.slice(0,1) : sequence;
 }
 
 function updateOperationPrompt(question){
@@ -1865,7 +1884,9 @@ function updateOperationPrompt(question){
   const label = document.getElementById('op-picker-label');
   const plan = document.getElementById('op-plan-progress');
   if(sequence.length <= 1){
-    label.textContent = 'Кое действие ще използваш, за да решиш задачата?';
+    label.textContent = question.firstOperationOnly
+      ? 'Кое действие трябва да извършиш първо?'
+      : 'Кое действие ще използваш, за да решиш задачата?';
     plan.textContent = '';
     return;
   }
@@ -2340,7 +2361,8 @@ function loadQuestion(){
   input.value = "";
 
   const panel = document.getElementById('scratch-panel');
-  panel.innerHTML = renderScratch(q.s,q.unitGate);
+  const scratchSpec = q.word ? blankScratchOperands(q.s) : q.s;
+  panel.innerHTML = renderScratch(scratchSpec,q.unitGate);
   panel.classList.remove('open');
   wireScratchPanel(panel);
   const toggleBtn = document.getElementById('scratch-toggle-btn');
@@ -2355,7 +2377,7 @@ function loadQuestion(){
   opTransitioning = false;
   document.querySelectorAll('.op-pick-btn').forEach(b=>b.classList.remove('correct','wrong'));
 
-  if(q.word){
+  if(q.word || operationSequenceFor(q).length){
     opConfirmed = false;
     updateOperationPrompt(q);
     opPicker.style.display = 'block';
@@ -2404,7 +2426,16 @@ document.getElementById('op-picker').addEventListener('click', function(e){
         document.getElementById('op-picker').style.display = 'none';
         const answerArea = document.getElementById('answer-area');
         answerArea.style.display = '';
-        document.getElementById('answer-input').focus();
+        if(q.revealScratchAfterOperation){
+          const scratchPanel=document.getElementById('scratch-panel');
+          const scratchButton=document.getElementById('scratch-toggle-btn');
+          scratchPanel.classList.add('open');
+          scratchButton.classList.add('active');
+          const firstScratchInput=scratchPanel.querySelector('input');
+          if(firstScratchInput) firstScratchInput.focus();
+        }else{
+          document.getElementById('answer-input').focus();
+        }
         opTransitioning = false;
       },800);
     }
@@ -2955,11 +2986,11 @@ function tenGenerate(type,week,day){
   }
   if(type==='expr'){
     a=randInt(2,9); b=randInt(2,9); c=a*b+randInt(25,180);
-    return tenQuestion(`Пресметни: ${c} − ${a} · ${b} =`,c-a*b,['steps',[['*',a,b],['-',c,null]]],{opSequence:['*','-']});
+    return tenQuestion(`Пресметни: ${c} − ${a} · ${b} =`,c-a*b,['steps',[['*',a,b],['-',c,null]]],{opSequence:['*','-'],firstOperationOnly:true,revealScratchAfterOperation:true});
   }
   if(type==='parenExpr'){
     a=randInt(12,65); b=randInt(5,35); c=randInt(2,9);
-    return tenQuestion(`Пресметни: (${a} + ${b}) · ${c} =`,(a+b)*c,['steps',[['+',a,b],['*',null,c]]],{opSequence:['+','*']});
+    return tenQuestion(`Пресметни: (${a} + ${b}) · ${c} =`,(a+b)*c,['steps',[['+',a,b],['*',null,c]]],{opSequence:['+','*'],firstOperationOnly:true,revealScratchAfterOperation:true});
   }
   if(type==='time'){
     h=randInt(1,8); m=[0,15,20,30,40,45][randInt(0,5)];
@@ -3056,8 +3087,37 @@ function tenGenerate(type,week,day){
     a=randInt(250,900); b=randInt(60,a-30);
     return tenQuestion(`В склад имало ${a} тетрадки. Използвали ${b} от тях. Колко тетрадки останали?`,a-b,['-',a,b],{word:true,opFor:'-'});
   }
-  a=randInt(70,300); b=randInt(20,150); c=randInt(15,Math.min(a+b-1,140));
-  return tenQuestion(`В магазин имало ${a} топки. Доставили още ${b}, а после продали ${c}. Колко топки останали?`,a+b-c,['steps',[['+',a,b],['-',null,c]]],{word:true,opSequence:['+','-']});
+  a=randInt(120,300);
+  b=randInt(20,Math.min(110,a-20));
+  c=randInt(15,120);
+  const stockStories=[
+    {
+      text:`В магазин имало ${a} топки. Доставили още ${c}, а после продали ${b}. Колко топки останали?`,
+      answer:a+c-b, steps:[['+',a,c],['-',null,b]], operations:['+','-']
+    },
+    {
+      text:`В магазин имало ${a} топки. Първо продали ${b}, а след това доставили още ${c}. Колко топки има сега?`,
+      answer:a-b+c, steps:[['-',a,b],['+',null,c]], operations:['-','+']
+    },
+    {
+      text:`В библиотека имало ${a} книги. Ученици взели ${b}, а по-късно върнали ${c}. Колко книги има сега в библиотеката?`,
+      answer:a-b+c, steps:[['-',a,b],['+',null,c]], operations:['-','+']
+    },
+    {
+      text:`В училищната градина имало ${a} цветя. Засадили още ${c}, а после подарили ${b}. Колко цветя останали?`,
+      answer:a+c-b, steps:[['+',a,c],['-',null,b]], operations:['+','-']
+    },
+    {
+      text:`В музей имало ${a} посетители. Излезли ${b}, а след това влезли още ${c}. Колко посетители има сега?`,
+      answer:a-b+c, steps:[['-',a,b],['+',null,c]], operations:['-','+']
+    },
+    {
+      text:`За празник подготвили ${a} балона. Добавили още ${c}, а после използвали ${b}. Колко балона останали?`,
+      answer:a+c-b, steps:[['+',a,c],['-',null,b]], operations:['+','-']
+    }
+  ];
+  const story=stockStories[randInt(0,stockStories.length-1)];
+  return tenQuestion(story.text,story.answer,['steps',story.steps],{word:true,opSequence:story.operations,storyVariant:true});
 }
 
 function tenQuestionsFor(weekIndex,dayIndex){
