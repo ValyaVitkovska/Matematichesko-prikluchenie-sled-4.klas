@@ -1,6 +1,6 @@
 const CACHE_NAME = 'math-adventure-10-weeks-v1';
 const CORE_ASSETS = [
-  './math-adventure-10-weeks.html',
+  './index.html',
   './manifest.webmanifest',
   './icons/app-icon-192.png',
   './icons/app-icon-180.png',
