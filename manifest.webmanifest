@@ -2,7 +2,7 @@
   "name": "Математическо приключение след 4. клас",
   "short_name": "След 4. клас",
   "description": "10 седмици, 70 дневни теста и 700 математически задачи с различни варианти при всяко стартиране.",
-  "start_url": "./math-adventure-10-weeks.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
