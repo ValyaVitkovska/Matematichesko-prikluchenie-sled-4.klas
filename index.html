@@ -1509,19 +1509,47 @@ function padCells(numOrNull, width){
   return padded.split('').map(ch => ch === ' ' ? '' : ch);
 }
 
+function digitCount(value){
+  if(value === null || value === undefined || value === '') return 0;
+  const number = Number(value);
+  if(!Number.isFinite(number)) return String(value).replace(/\D/g,'').length;
+  return String(Math.abs(Math.trunc(number))).length;
+}
+
 function renderVertical(op, a, b){
-  const width = 4;
   const symbol = op === '*' ? '·' : op;
+  const isSub = op === '-';
+  const hasBlankOperand = a === null || b === null;
+  let calculatedResult = null;
+
+  if(a !== null && b !== null){
+    calculatedResult = op === '+' ? Number(a) + Number(b) : Number(a) - Number(b);
+  }
+
+  /*
+     Броят на разрядните колони вече се определя от самите числа.
+     При междинна стъпка с празен операнд остават най-малко 4 колони,
+     защото предишният резултат трябва да бъде въведен от детето.
+  */
+  const width = Math.max(
+    hasBlankOperand ? 4 : 1,
+    digitCount(a),
+    digitCount(b),
+    digitCount(calculatedResult)
+  );
   const cellsA = padCells(a, width);
   const cellsB = padCells(b, width);
-  const isSub = op === '-';
-  const totalCols = width + 2;
 
-  let html = `<table class="vtable"><tbody>`;
+  let html = `<table class="vtable" data-place-columns="${width}"><tbody>`;
 
+  /* Ред за пренос или за записване на 10 при заемане. */
   html += `<tr><td></td><td></td>`;
   for(let i=0;i<width;i++){
-    html += `<td class="vcell carry"><input type="text" maxlength="2"/></td>`;
+    const positionFromRight = width-i;
+    const label = isSub
+      ? `Място за записване при заемане, позиция ${positionFromRight} отдясно`
+      : `Цифра за пренос, позиция ${positionFromRight} отдясно`;
+    html += `<td class="vcell carry"><input type="text" inputmode="numeric" maxlength="2" aria-label="${label}"/></td>`;
   }
   html += `</tr>`;
 
@@ -1553,9 +1581,11 @@ function renderVertical(op, a, b){
 
   html += `<tr><td></td><td class="lineline" colspan="${width+1}"></td></tr>`;
 
-  html += `<tr>`;
-  for(let i=0;i<totalCols;i++){
-    html += `<td class="vcell"><input class="step-result-input" type="text" inputmode="numeric" maxlength="1" aria-label="Цифра от резултата"/></td>`;
+  /* Две празни клетки пазят знака и числата подравнени; квадратчетата са точно по едно за всеки разряд. */
+  html += `<tr><td></td><td></td>`;
+  for(let i=0;i<width;i++){
+    const positionFromRight = width-i;
+    html += `<td class="vcell"><input class="step-result-input" type="text" inputmode="numeric" maxlength="1" aria-label="Цифра от резултата, позиция ${positionFromRight} отдясно"/></td>`;
   }
   html += `</tr>`;
 
