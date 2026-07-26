@@ -663,16 +663,23 @@
   }
   .geo-coach-avatar{
     position:relative;
-    flex:0 0 48px;
-    width:48px;
-    height:48px;
+    flex:0 0 62px;
+    width:62px;
+    height:62px;
     display:grid;
     place-items:center;
     border-radius:50%;
     background:#fff;
     border:2px solid #7dd6c8;
-    font-size:1.7rem;
+    overflow:visible;
     box-shadow:0 3px 10px rgba(49,145,132,.13);
+  }
+  .geo-coach-avatar img{
+    width:58px;
+    height:58px;
+    display:block;
+    object-fit:contain;
+    border-radius:50%;
   }
   .geo-coach-calculator{
     position:absolute;
@@ -1716,7 +1723,7 @@ function renderBlankDivision(){
 
 function renderGeoCoach(){
   return `<div class="geo-coach" role="note" aria-label="Съвет от Гео">
-    <span class="geo-coach-avatar" aria-hidden="true">🤓<span class="geo-coach-calculator">🧮</span></span>
+    <span class="geo-coach-avatar" aria-hidden="true"><img src="./assets/geo.png" alt=""><span class="geo-coach-calculator">🧮</span></span>
     <span class="geo-coach-text"><strong>Гео:</strong> „Първо мислиш, после пишеш!“</span>
   </div>`;
 }
@@ -1777,6 +1784,53 @@ function stepGuidingQuestion(spec,index){
   return `${start} ${prompts[spec[0]] || ''} Извърши пресмятането и запиши резултата.`;
 }
 
+function originalStepForChoice(question,index){
+  if(!question || !Array.isArray(question.s)) return null;
+  if(question.s[0] !== 'steps') return index === 0 ? question.s : null;
+  const calculationSteps=(question.s[1] || []).filter(step=>Array.isArray(step) && step[0] !== 'note');
+  return calculationSteps[index] || null;
+}
+
+function concreteStepOptions(question,index){
+  const original=originalStepForChoice(question,index);
+  if(!original || !['+','-','*','/'].includes(original[0])) return null;
+  const first=original[1];
+  const second=original[2];
+  const hasFirst=Number.isFinite(first);
+  const hasSecond=Number.isFinite(second);
+  if(!hasFirst && !hasSecond) return null;
+  const format=value=>Number(value).toLocaleString('bg-BG');
+
+  if(hasFirst && hasSecond){
+    const left=format(first);
+    const right=format(second);
+    return {
+      '+':`Събирам ${left} и ${right}.`,
+      '-':`От ${left} изваждам ${right}.`,
+      '*':`Умножавам ${left} по ${right}.`,
+      '/':`Разделям ${left} на ${right}.`
+    };
+  }
+
+  if(hasSecond){
+    const right=format(second);
+    return {
+      '+':`Към получения резултат прибавям ${right}.`,
+      '-':`От получения резултат изваждам ${right}.`,
+      '*':`Умножавам получения резултат по ${right}.`,
+      '/':`Разделям получения резултат на ${right}.`
+    };
+  }
+
+  const left=format(first);
+  return {
+    '+':`Към ${left} прибавям получения резултат.`,
+    '-':`От ${left} изваждам получения резултат.`,
+    '*':`Умножавам ${left} по получения резултат.`,
+    '/':`Разделям ${left} на получения резултат.`
+  };
+}
+
 function stepChoiceData(spec,index,question){
   const first={
     '+':'Събирам двете стойности.',
@@ -1814,6 +1868,8 @@ function stepChoiceData(spec,index,question){
   const special=contextual[kind] && contextual[kind][index];
   const options=Object.assign({},index===0 ? first : next);
   if(special) options[spec[0]]=special;
+  const concrete=concreteStepOptions(question,index);
+  if(concrete) Object.assign(options,concrete);
   return {
     prompt:index===0
       ? 'Избери точно какво трябва да направиш в тази стъпка.'
