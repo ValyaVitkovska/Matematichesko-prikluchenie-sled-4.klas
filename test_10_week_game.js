@@ -45,6 +45,9 @@ const summary = vm.runInContext(`(() => {
   const badAnswers = DAYS.filter(day => day.questions.some(q => !Number.isFinite(q.a))).length;
   const badCounts = DAYS.filter(day => day.questions.length !== 10).length;
   const badFacts = DAYS.filter(day => day.facts.length !== 5).length;
+  const genericFactLeaks = DAYS.filter(day => day.facts.some(fact =>
+    /местообитани|всички техни обитатели|различните видове|животните .* имат различни нужди/i.test(fact)
+  )).length;
   const weekSizes = Array.from({length:10}, (_, week) => DAYS.filter(day => day.week === week).length);
   const firstRun = JSON.stringify(tenQuestionsFor(9, 7).map(q => [q.t,q.a]));
   const secondRun = JSON.stringify(tenQuestionsFor(9, 7).map(q => [q.t,q.a]));
@@ -86,6 +89,7 @@ const summary = vm.runInContext(`(() => {
     badAnswers,
     badCounts,
     badFacts,
+    genericFactLeaks,
     regeneratedDifferently: firstRun !== secondRun,
     unitGatesChecked: unitGateTypes.length,
     badUnitGates,
@@ -107,7 +111,7 @@ const summary = vm.runInContext(`(() => {
 console.log(JSON.stringify(summary, null, 2));
 if (summary.totalDays !== 70) process.exitCode = 1;
 if (summary.weekSizes.some(size => size !== 7)) process.exitCode = 1;
-if (summary.badAnswers || summary.badCounts || summary.badFacts) process.exitCode = 1;
+if (summary.badAnswers || summary.badCounts || summary.badFacts || summary.genericFactLeaks) process.exitCode = 1;
 if (summary.stressFailures) process.exitCode = 1;
 if (summary.badUnitGates.length) process.exitCode = 1;
 if (!summary.editableBorrowClick || !summary.blankWordScratch) process.exitCode = 1;
