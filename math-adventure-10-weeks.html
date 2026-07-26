@@ -1777,7 +1777,7 @@ function stepGuidingQuestion(spec,index){
   return `${start} ${prompts[spec[0]] || ''} Извърши пресмятането и запиши резултата.`;
 }
 
-function stepChoiceData(spec,index){
+function stepChoiceData(spec,index,question){
   const first={
     '+':'Събирам двете стойности.',
     '-':'Изваждам втората стойност от първата.',
@@ -1790,17 +1790,41 @@ function stepChoiceData(spec,index){
     '*':'Умножавам междинния резултат по следващия множител.',
     '/':'Разделям междинния резултат на следващия делител.'
   };
+  const kind=question && question.kind;
+  const contextual={
+    squarePerimeter:{0:'Умножавам дължината на страната по 4.'},
+    rectPerimeter:{0:'Събирам дължината и широчината.',1:'Умножавам получения сбор по 2.'},
+    trianglePerimeter:{0:'Събирам дължините на две от страните.',1:'Прибавям дължината на третата страна към получения сбор.'},
+    squareArea:{0:'Умножавам дължината на страната сама по себе си.'},
+    rectArea:{0:'Умножавам дължината по широчината.'},
+    time:{0:'Умножавам броя на часовете по 60.',1:'Прибавям дадените минути към получения брой минути.'},
+    moneyConvert:{0:'Умножавам броя на левовете по 100.',1:'Прибавям дадените стотинки.'},
+    lengthConvert:{0:'Умножавам броя на метрите по 100.',1:'Прибавям дадените сантиметри.'},
+    massConvert:{0:'Умножавам броя на килограмите по 1000.',1:'Прибавям дадените грамове.'},
+    capacityConvert:{0:'Умножавам броя на литрите по 1000.',1:'Прибавям дадените милилитри.'},
+    wordMul:{0:'Умножавам броя в една група по броя на групите.'},
+    wordDiv:{0:'Разделям общото количество поравно на броя на групите.'},
+    moneyChange:{0:'Умножавам цената на една тетрадка по броя на тетрадките.',1:'Изваждам стойността на покупката от платената сума.'},
+    tableRead:{0:'Събирам стойностите от посочените две колони.'},
+    barChart:{0:'Изваждам по-малката стойност от по-голямата.'},
+    missingSegment:{0:'Изваждам дължината на известната част от общата дължина.'},
+    pictogram:{0:'Умножавам броя на знаците по стойността на един знак.'},
+    multiCondition:{0:'Умножавам броя на кутиите по броя карти във всяка кутия.',1:'Прибавям допълнително добавените карти.',2:'Изваждам подарените карти.'}
+  };
+  const special=contextual[kind] && contextual[kind][index];
+  const options=Object.assign({},index===0 ? first : next);
+  if(special) options[spec[0]]=special;
   return {
     prompt:index===0
       ? 'Избери точно какво трябва да направиш в тази стъпка.'
       : 'Избери как ще използваш резултата от предишната стъпка.',
     correct:spec[0],
-    options:index===0 ? first : next
+    options
   };
 }
 
-function renderStepChoice(spec,index){
-  const data=stepChoiceData(spec,index);
+function renderStepChoice(spec,index,question){
+  const data=stepChoiceData(spec,index,question);
   const options=Object.entries(data.options)
     .map(([value,label])=>`<option value="${value}">${label}</option>`)
     .join('');
@@ -1814,7 +1838,7 @@ function renderStepChoice(spec,index){
   </div>`;
 }
 
-function renderSteps(steps){
+function renderSteps(steps,question){
   const items=[];
   let pendingNotes=[];
   steps.forEach(spec=>{
@@ -1835,7 +1859,7 @@ function renderSteps(steps){
       <div class="step-label">Стъпка ${index+1} от ${items.length} — ${opWord(item.spec[0])}</div>
       ${notes}
       <div class="step-question">❓ ${stepGuidingQuestion(item.spec,index)}</div>
-      ${renderStepChoice(item.spec,index)}
+      ${renderStepChoice(item.spec,index,question)}
       <div class="step-calculation" hidden>
         ${renderSubPanel(item.spec)}
         ${isLast?'':`<div class="step-next-row"><button type="button" class="step-next-btn" data-next-step="${index+1}">Готово — покажи следващата стъпка</button><span class="step-next-feedback" aria-live="polite"></span></div>`}
@@ -1846,9 +1870,9 @@ function renderSteps(steps){
   return html;
 }
 
-function renderScratch(spec,unitGate){
+function renderScratch(spec,unitGate,question){
   if(!spec) return '';
-  const calculation=spec[0] === 'steps' ? renderSteps(spec[1]) : renderSteps([spec]);
+  const calculation=spec[0] === 'steps' ? renderSteps(spec[1],question) : renderSteps([spec],question);
   if(!unitGate) return calculation;
   return `<div class="unit-gate" data-unit-answer="${unitGate.answer}">
     <div class="unit-gate-kicker">Първо си припомни връзката между мерните единици</div>
@@ -2512,7 +2536,7 @@ function loadQuestion(){
 
   const panel = document.getElementById('scratch-panel');
   const scratchSpec = q.word ? blankScratchOperands(q.s) : q.s;
-  panel.innerHTML = renderScratch(scratchSpec,q.unitGate);
+  panel.innerHTML = renderScratch(scratchSpec,q.unitGate,q);
   panel.classList.remove('open');
   wireScratchPanel(panel);
   const toggleBtn = document.getElementById('scratch-toggle-btn');
@@ -3404,11 +3428,21 @@ function tenGenerate(type,week,day){
 function tenQuestionsFor(weekIndex,dayIndex){
   const types=TEN_PROFILES[weekIndex].slice();
   const shift=(dayIndex-1)%types.length;
-  const core=types.slice(shift).concat(types.slice(0,shift)).map(type=>tenGenerate(type,weekIndex+1,dayIndex));
+  const makeQuestion=type=>{
+    const question=tenGenerate(type,weekIndex+1,dayIndex);
+    question.kind=type;
+    return question;
+  };
+  const core=types.slice(shift).concat(types.slice(0,shift)).map(makeQuestion);
   const extraStart=(weekIndex*3+(dayIndex-1)*2)%TEN_EXTRA_TYPES.length;
   const extras=[TEN_EXTRA_TYPES[extraStart],TEN_EXTRA_TYPES[(extraStart+1)%TEN_EXTRA_TYPES.length]]
-    .map(type=>tenGenerate(type,weekIndex+1,dayIndex));
-  return core.concat(extras);
+    .map(makeQuestion);
+  const questions=core.concat(extras);
+  for(let i=questions.length-1;i>0;i--){
+    const j=randInt(0,i);
+    [questions[i],questions[j]]=[questions[j],questions[i]];
+  }
+  return questions;
 }
 
 function tenBuildDays(){
@@ -3443,6 +3477,21 @@ progress={};
 try{ progress=JSON.parse(localStorage.getItem('math_game_progress_10_weeks')||'{}'); }catch(e){ progress={}; }
 sessionProgress={};
 saveProgress=function(){ try{ localStorage.setItem('math_game_progress_10_weeks',JSON.stringify(progress)); }catch(e){} };
+let TEN_lastQuestionSignatures={};
+try{ TEN_lastQuestionSignatures=JSON.parse(localStorage.getItem('math_game_last_questions_v2')||'{}'); }catch(e){ TEN_lastQuestionSignatures={}; }
+
+function tenFreshQuestions(weekIndex,dayIndex){
+  const key=`${weekIndex}-${dayIndex}`;
+  let questions,signature,attempts=0;
+  do{
+    questions=tenQuestionsFor(weekIndex,dayIndex);
+    signature=JSON.stringify(questions.map(question=>question.t));
+    attempts++;
+  }while(signature===TEN_lastQuestionSignatures[key] && attempts<8);
+  TEN_lastQuestionSignatures[key]=signature;
+  try{ localStorage.setItem('math_game_last_questions_v2',JSON.stringify(TEN_lastQuestionSignatures)); }catch(e){}
+  return questions;
+}
 
 const TEN_baseSvgAnimal=svgAnimal;
 function tenEmojiPuzzle(day){
@@ -3514,7 +3563,7 @@ renderLevels=function(){
 const TEN_baseStartDay=startDay;
 startDay=function(idx){
   const day=DAYS[idx];
-  day.questions=tenQuestionsFor(day.week,day.day+1);
+  day.questions=tenFreshQuestions(day.week,day.day+1);
   document.getElementById('animal-stage').style.background=day.habitatBg;
   TEN_baseStartDay(idx);
 };
@@ -3587,7 +3636,18 @@ if(TEN_DEMO_MODE){
     ['mul','div','lengthConvert','rectPerimeter','tableRead'],
     ['expr','moneyChange','massConvert','multiCondition','logicPattern']
   ];
-  const demoQuestionsFor=dayIndex=>demoProfiles[dayIndex].map(type=>tenGenerate(type,dayIndex+1,dayIndex+1));
+  const demoQuestionsFor=dayIndex=>{
+    const questions=demoProfiles[dayIndex].map(type=>{
+      const question=tenGenerate(type,dayIndex+1,dayIndex+1);
+      question.kind=type;
+      return question;
+    });
+    for(let i=questions.length-1;i>0;i--){
+      const j=randInt(0,i);
+      [questions[i],questions[j]]=[questions[j],questions[i]];
+    }
+    return questions;
+  };
   DAYS=DAYS.slice(0,3).map((day,index)=>Object.assign({},day,{
     title:`Демо ден ${index+1} — ${TEN_DAY_LABELS[index]}`,
     questions:demoQuestionsFor(index)

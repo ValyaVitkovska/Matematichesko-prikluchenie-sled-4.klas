@@ -1,4 +1,4 @@
-const CACHE_NAME = 'math-adventure-10-weeks-v14';
+const CACHE_NAME = 'math-adventure-10-weeks-v15';
 const APP_SHELL = [
   './index.html',
   './math-adventure-10-weeks.html',

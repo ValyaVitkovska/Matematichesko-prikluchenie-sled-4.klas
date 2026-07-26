@@ -37,6 +37,10 @@ const context = vm.createContext({
   geoCoach: html.includes('class="geo-coach"') &&
     html.includes('Първо мислиш, после пишеш!') &&
     html.includes('🧮'),
+  contextualChoices: html.includes('Умножавам дължината на страната по 4.') &&
+    html.includes('Умножавам получения сбор по 2.'),
+  persistentFreshGeneration: html.includes('function tenFreshQuestions') &&
+    html.includes('math_game_last_questions_v2'),
 });
 
 vm.runInContext(expansion, context, { filename: '10-week-expansion.js' });
@@ -61,7 +65,7 @@ const summary = vm.runInContext(`(() => {
     for(let week=0; week<10; week++){
       for(let day=1; day<=7; day++){
         const generated=tenQuestionsFor(week,day);
-        if(generated.length!==10 || generated.some(q=>!Number.isFinite(q.a) || !q.t || !q.s)) stressFailures++;
+        if(generated.length!==10 || generated.some(q=>!Number.isFinite(q.a) || !q.t || !q.s || !q.kind)) stressFailures++;
       }
     }
   }
@@ -97,6 +101,8 @@ const summary = vm.runInContext(`(() => {
     blankWordScratch,
     stagedDropdownHints,
     geoCoach,
+    contextualChoices,
+    persistentFreshGeneration,
     stockOrders:[...stockOrders].sort(),
     stockVariantCount:stockTexts.size,
     expressionFirstOperationGate:expression.firstOperationOnly===true && expression.revealScratchAfterOperation===true,
@@ -116,6 +122,7 @@ if (summary.stressFailures) process.exitCode = 1;
 if (summary.badUnitGates.length) process.exitCode = 1;
 if (!summary.editableBorrowClick || !summary.blankWordScratch) process.exitCode = 1;
 if (!summary.stagedDropdownHints || !summary.geoCoach) process.exitCode = 1;
+if (!summary.contextualChoices || !summary.persistentFreshGeneration) process.exitCode = 1;
 if (!summary.stockOrders.includes('+-') || !summary.stockOrders.includes('-+') || summary.stockVariantCount < 4) process.exitCode = 1;
 if (!summary.expressionFirstOperationGate) process.exitCode = 1;
 if (summary.badGeometryGates.length) process.exitCode = 1;
