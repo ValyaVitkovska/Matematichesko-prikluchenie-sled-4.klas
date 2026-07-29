@@ -522,6 +522,69 @@
     height:100%; width:0%; transition:width .4s ease;
   }
   .question-count{ font-size:.85rem; color:#888; margin-bottom:6px; }
+  .bloom-guide{
+    order:3;
+    margin:0 auto 22px;
+    padding:12px 16px;
+    border:1.5px solid #d9d2ff;
+    border-radius:18px;
+    background:rgba(255,255,255,.88);
+    box-shadow:0 8px 24px rgba(67,52,145,.08);
+  }
+  .bloom-guide summary{
+    cursor:pointer;
+    color:#5146a8;
+    font-weight:900;
+  }
+  .bloom-guide p{
+    margin:9px 0 10px;
+    color:#5d5873;
+    font-size:.88rem;
+  }
+  .bloom-guide-levels{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+  }
+  .bloom-guide-levels span{
+    padding:6px 10px;
+    border-radius:999px;
+    background:#f4f1ff;
+    color:#5146a8;
+    font-size:.78rem;
+    font-weight:900;
+  }
+  .bloom-stage{
+    --bloom-color:#6c5ce7;
+    margin:0 0 9px;
+    padding:8px 11px;
+    border-left:5px solid var(--bloom-color);
+    border-radius:10px;
+    background:#f7f5ff;
+  }
+  .bloom-stage[data-bloom="remember"]{ --bloom-color:#7a68d8; background:#f5f2ff; }
+  .bloom-stage[data-bloom="understand"]{ --bloom-color:#328fc5; background:#eef9ff; }
+  .bloom-stage[data-bloom="apply"]{ --bloom-color:#24a67a; background:#effbf6; }
+  .bloom-stage[data-bloom="analyze"]{ --bloom-color:#e08b32; background:#fff7eb; }
+  .bloom-stage[data-bloom="evaluate"]{ --bloom-color:#d0a300; background:#fffbea; }
+  .bloom-stage[data-bloom="create"]{ --bloom-color:#d95f82; background:#fff1f6; }
+  .bloom-stage-title{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:var(--bloom-color);
+    font-size:.78rem;
+    font-weight:950;
+    text-transform:uppercase;
+    letter-spacing:.035em;
+  }
+  .bloom-stage-prompt{
+    margin-top:3px;
+    color:#514d63;
+    font-size:.84rem;
+    font-weight:750;
+    line-height:1.35;
+  }
   .question-text{
     font-size:1.3rem;
     font-weight:bold;
@@ -689,6 +752,32 @@
   }
   .geo-coach-text{ line-height:1.25; font-size:.82rem; font-weight:800; }
   .geo-coach-text strong{ display:block; color:#138f83; font-size:.9rem; }
+  .geo-coach-message{ display:inline; }
+  .geo-coach-word{
+    display:inline-block;
+    white-space:nowrap;
+    margin-right:.28em;
+  }
+  .geo-coach-word:last-child{ margin-right:0; }
+  .geo-coach-letter{
+    display:inline-block;
+    opacity:0;
+    animation:geo-letter-appear 1ms steps(1,end) forwards;
+    animation-delay:calc(var(--geo-letter-index) * 48ms);
+    animation-play-state:paused;
+  }
+  .step-calculation:not([hidden]) .geo-coach-letter{
+    animation-play-state:running;
+  }
+  @keyframes geo-letter-appear{
+    to{ opacity:1; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .geo-coach-letter{
+      opacity:1;
+      animation:none;
+    }
+  }
   body.demo-mode::before{
     content:"ДЕМО ВЕРСИЯ";
     position:fixed;
@@ -814,6 +903,96 @@
     font-size:1.55rem;
     font-weight:900;
   }
+  .multiplication-notebook-wrap{
+    width:max-content;
+    max-width:100%;
+    margin:8px auto 2px;
+    padding:12px;
+    border:1.5px solid #cfdcf0;
+    border-radius:14px;
+    background-color:#fbfdff;
+    background-image:
+      linear-gradient(rgba(112,157,209,.11) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(112,157,209,.11) 1px,transparent 1px);
+    background-size:42px 42px;
+    overflow-x:auto;
+  }
+  table.multiplication-notebook{
+    border-collapse:separate;
+    border-spacing:5px 4px;
+    margin:auto;
+  }
+  .multiplication-notebook td{
+    width:42px;
+    min-width:42px;
+    height:42px;
+    padding:0;
+    text-align:center;
+    vertical-align:middle;
+  }
+  .multiplication-notebook .mul-label{
+    width:34px;
+    min-width:34px;
+    color:#655f76;
+    font-size:.7rem;
+    font-weight:900;
+  }
+  .multiplication-notebook .mul-sign{
+    color:#403a52;
+    font-size:1.4rem;
+    font-weight:950;
+  }
+  .multiplication-notebook .mul-fixed,
+  .multiplication-notebook input{
+    width:42px;
+    height:42px;
+    border:2px solid #d8d0ff;
+    border-radius:8px;
+    background:#fff;
+    color:var(--text);
+    font-family:inherit;
+    font-size:1.2rem;
+    font-weight:900;
+    line-height:1;
+    text-align:center;
+    outline:none;
+  }
+  .multiplication-notebook .mul-fixed{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .multiplication-notebook input:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(108,92,231,.12);
+  }
+  .multiplication-notebook .mul-carry-input{
+    height:28px;
+    border:1.5px dashed #e1a84b;
+    background:#fffdf6;
+    color:#ad6917;
+    font-size:.82rem;
+  }
+  .multiplication-notebook .mul-line td:not(.mul-label){
+    height:5px;
+    border-top:2.5px solid #3f4650;
+  }
+  .multiplication-notebook .mul-shift-cell{
+    border:1.5px dashed rgba(112,157,209,.36);
+    border-radius:8px;
+    background:rgba(232,242,253,.62);
+  }
+  .multiplication-notebook .mul-final input{
+    border-color:#8fb8e8;
+    background:#f7fbff;
+  }
+  .multiplication-notebook-caption{
+    margin:0 0 8px;
+    color:#4d6582;
+    font-size:.76rem;
+    font-weight:850;
+    text-align:center;
+  }
 
   table.vtable{
     border-collapse:collapse;
@@ -921,6 +1100,22 @@
     color:#e34455;
     font-size:1.35rem;
     line-height:1;
+  }
+  .division-equation .division-dot-editable{
+    position:relative;
+    display:inline-flex;
+  }
+  .division-equation .division-dot-editable.has-dot::after{
+    content:"•";
+    position:absolute;
+    z-index:2;
+    top:-13px;
+    left:50%;
+    transform:translateX(-50%);
+    color:#e34455;
+    font-size:1.35rem;
+    line-height:1;
+    pointer-events:none;
   }
   .division-input{
     width:40px;
@@ -1167,6 +1362,18 @@
     <div class="typing-tip type-target" id="typing-tip" data-text="💡 Не бързай — мисли спокойно, използвай помощното поле и се забавлявай!"></div>
     <button type="button" class="show-instructions-btn" id="show-instructions-btn">Покажи целия текст</button>
   </section>
+  <details class="bloom-guide">
+    <summary>🌱 Мисловна пътека по таксономията на Блум</summary>
+    <p>Всеки дневен тест води детето от припомняне на знанията към самостоятелно създаване на подобна задача.</p>
+    <div class="bloom-guide-levels" aria-label="Шест равнища на мислене">
+      <span>🧠 Запомням</span>
+      <span>💬 Разбирам</span>
+      <span>🛠️ Прилагам</span>
+      <span>🔎 Анализирам</span>
+      <span>⚖️ Оценявам</span>
+      <span>✨ Създавам</span>
+    </div>
+  </details>
   <div class="levels-grid" id="levels-grid"></div>
 </div>
 
@@ -1180,6 +1387,7 @@
       </div>
       <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar"></div></div>
       <div class="question-count" id="question-count"></div>
+      <div class="bloom-stage" id="bloom-stage"></div>
       <div class="question-text" id="question-text"></div>
       <div class="question-visual" id="question-visual" hidden></div>
 
@@ -1643,7 +1851,7 @@ function renderVertical(op, a, b){
   return html;
 }
 
-function renderDivisionTail(a, b){
+function renderDivisionTail(a, b, editableOperands=false){
   const digits = String(a).split('');
   const n = digits.length;
   const firstGroupLength = n > 1 && Number(digits[0]) < b ? 2 : 1;
@@ -1689,13 +1897,20 @@ function renderDivisionTail(a, b){
   cells = [];
   for(let col=0;col<n;col++) cells.push(col===currentEnd ? inputCell('Краен остатък') : blankCell());
   work += makeRow('',cells,'остатък');
+  const dividendMarkup=editableOperands
+    ? digits.map((_,index)=>`<span class="division-dot-editable"><input class="division-input step-operand-input" type="text" inputmode="numeric" maxlength="1" aria-label="Делимо, цифра ${index+1}. Докосни отново въведената цифра, за да отбележиш свалянето ѝ."></span>`).join('')
+    : digits.map(d=>`<span class="fixed-digit division-dot-toggle" role="button" tabindex="0" aria-label="Постави точка над цифрата ${d}">${d}</span>`).join('');
+  const divisorDigits=String(b).split('');
+  const divisorMarkup=editableOperands
+    ? divisorDigits.map((_,index)=>`<input class="division-input step-operand-input" type="text" inputmode="numeric" maxlength="1" aria-label="Делител, цифра ${index+1}">`).join('')
+    : `<span class="fixed-digit">${b}</span>`;
 
   return `<div class="division-tail-card" data-dividend="${a}" data-divisor="${b}" style="--division-cols:${n}">
     <div class="division-tail-title">Деление с опашка</div>
     <div class="scratch-hint">✏️ Работи на малки стъпки: 1) прецени колко пъти делителят се съдържа в първата подходяща част на делимото; 2) запиши цифрата в частното; 3) умножи и извади; 4) свали следващата цифра. Докосни цифра от делимото само когато трябва да отбележиш свалянето ѝ.</div>
     <div class="division-equation">
-      <span class="division-dividend">${digits.map(d=>`<span class="fixed-digit division-dot-toggle" role="button" tabindex="0" aria-label="Постави точка над цифрата ${d}">${d}</span>`).join('')}</span>
-      <span>:</span><span class="fixed-digit">${b}</span><span>=</span><span class="division-quotient">${quotient}</span>
+      <span class="division-dividend">${dividendMarkup}</span>
+      <span>:</span><span class="division-quotient">${divisorMarkup}</span><span>=</span><span class="division-quotient">${quotient}</span>
     </div>
     <div class="division-work">${work}</div>
   </div>`;
@@ -1722,13 +1937,81 @@ function renderBlankDivision(){
 }
 
 function renderGeoCoach(){
+  const message='„Първо мислиш, после пишеш!“';
+  let letterIndex=0;
+  const animatedMessage=message.split(' ').map(word=>{
+    const letters=Array.from(word).map(letter=>
+      `<span class="geo-coach-letter" style="--geo-letter-index:${letterIndex++}">${letter}</span>`
+    ).join('');
+    letterIndex++;
+    return `<span class="geo-coach-word">${letters}</span>`;
+  }).join('');
   return `<div class="geo-coach" role="note" aria-label="Съвет от Гео">
     <span class="geo-coach-avatar" aria-hidden="true"><img src="./assets/geo.png" alt=""><span class="geo-coach-calculator">🧮</span></span>
-    <span class="geo-coach-text"><strong>Гео:</strong> „Първо мислиш, после пишеш!“</span>
+    <span class="geo-coach-text" aria-label="Гео: ${message}"><strong aria-hidden="true">Гео:</strong><span class="geo-coach-message" aria-hidden="true">${animatedMessage}</span></span>
   </div>`;
 }
 
-function renderSubPanel(spec){
+function renderNotebookMultiplication(a,b,templateA=a,templateB=b){
+  if(!Number.isFinite(templateA) || !Number.isFinite(templateB)) return '';
+  const digitsA=String(Math.abs(templateA)).split('');
+  const digitsB=String(Math.abs(templateB)).split('');
+  const productDigits=String(Math.abs(templateA*templateB)).length;
+  const width=Math.max(digitsA.length,digitsB.length,productDigits);
+  const fixedOrInputRow=(value,template,label,sign='')=>{
+    const digits=String(Math.abs(template)).split('');
+    const offset=width-digits.length;
+    let cells=`<td class="mul-sign">${sign}</td>`;
+    for(let col=0;col<width;col++){
+      if(col<offset){
+        cells+='<td></td>';
+      }else if(value===null){
+        cells+=`<td><input class="step-operand-input" type="text" inputmode="numeric" maxlength="1" aria-label="${label}, цифра ${col-offset+1}"></td>`;
+      }else{
+        cells+=`<td><span class="mul-fixed">${digits[col-offset]}</span></td>`;
+      }
+    }
+    return `<tr>${cells}</tr>`;
+  };
+  const carryRow=(rowNumber,shift=0)=>{
+    let cells=`<td class="mul-label">пр. ${rowNumber}</td>`;
+    for(let col=0;col<width;col++){
+      cells+=col>=width-shift
+        ? '<td></td>'
+        : `<td><input class="mul-carry-input" type="text" inputmode="numeric" maxlength="1" aria-label="Пренос при частично произведение ${rowNumber}, позиция ${col+1}"></td>`;
+    }
+    return `<tr>${cells}</tr>`;
+  };
+  const partialRow=(rowNumber,shift)=>{
+    let cells=`<td class="mul-label">${rowNumber}.</td>`;
+    for(let col=0;col<width;col++){
+      cells+=col>=width-shift
+        ? '<td class="mul-shift-cell" aria-label="Празно място поради изместване по разряд"></td>'
+        : `<td><input class="mul-partial-input" type="text" inputmode="numeric" maxlength="1" aria-label="Частично произведение ${rowNumber}, цифра ${col+1}"></td>`;
+    }
+    return `<tr>${cells}</tr>`;
+  };
+  const lineRow=()=>`<tr class="mul-line"><td class="mul-label"></td>${Array.from({length:width},()=>'<td></td>').join('')}</tr>`;
+  let rows=carryRow(1)+fixedOrInputRow(a,templateA,'Първи множител')+fixedOrInputRow(b,templateB,'Втори множител','×')+lineRow();
+  if(digitsB.length>1){
+    rows+=partialRow(1,0);
+    for(let index=1;index<digitsB.length;index++){
+      rows+=carryRow(index+1,index)+partialRow(index+1,index);
+    }
+    rows+=lineRow();
+  }
+  rows+=`<tr class="mul-final"><td class="mul-label">отг.</td>${Array.from({length:width},(_,index)=>`<td><input class="step-result-input" type="text" inputmode="numeric" maxlength="1" aria-label="Краен резултат, цифра ${index+1}"></td>`).join('')}</tr>`;
+  const partialCaption=digitsB.length>1
+    ? `Има ${digitsB.length} реда за частични произведения. Всеки следващ ред е изместен с едно квадратче наляво.`
+    : 'Запиши преноса над множителите и произведението под чертата.';
+  return `<div class="multiplication-notebook-wrap">
+    <div class="multiplication-notebook-caption">${partialCaption}</div>
+    <table class="multiplication-notebook" aria-label="Писмено умножение като в ученическа тетрадка"><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+function renderSubPanel(spec,question,index){
+  const resolved=resolvedStepForScratch(question,index) || spec;
   if(spec[0] === '+' || spec[0] === '-'){
     const addHint=spec[0]==='+'
       ? '<div class="scratch-hint">✏️ Подреди числата по разреди: единици под единици, десетици под десетици. Започни да събираш от единиците и записвай преноса в квадратчето над следващия разряд.</div>'
@@ -1736,6 +2019,16 @@ function renderSubPanel(spec){
     return renderGeoCoach()+addHint+renderVertical(spec[0], spec[1], spec[2]);
   }
   if(spec[0] === '*'){
+    const needsNotebook=question && (
+      question.word ||
+      question.firstOperationOnly ||
+      question.unitGate ||
+      (Array.isArray(question.s) && question.s[0]==='steps')
+    );
+    if(needsNotebook && Number.isFinite(resolved[1]) && Number.isFinite(resolved[2])){
+      return `${renderGeoCoach()}<div class="scratch-hint">✏️ Запиши множителите един под друг. Умножавай отдясно наляво. При двуцифрен или многоцифрен втори множител използвай отделен ред за всяко частично произведение, после ги събери.</div>
+        ${renderNotebookMultiplication(spec[1],spec[2],resolved[1],resolved[2])}`;
+    }
     const firstIsBlank = spec[1] === null;
     const secondIsBlank = spec[2] === null;
     const firstDigits = firstIsBlank ? new Array(4).fill('') : String(spec[1]).split('');
@@ -1758,7 +2051,9 @@ function renderSubPanel(spec){
       </div>`;
   }
   if(spec[0] === '/') return renderGeoCoach()+(spec[1] === null || spec[2] === null
-    ? renderBlankDivision()
+    ? (Number.isFinite(resolved[1]) && Number.isFinite(resolved[2])
+      ? renderDivisionTail(resolved[1],resolved[2],true)
+      : renderBlankDivision())
     : renderDivisionTail(spec[1], spec[2]));
   return '';
 }
@@ -1782,6 +2077,31 @@ function stepGuidingQuestion(spec,index){
     ? 'Какво трябва да намериш първо?'
     : 'Как ще използваш резултата от предишната стъпка? Запиши го сам в празните квадратчета.';
   return `${start} ${prompts[spec[0]] || ''} Извърши пресмятането и запиши резултата.`;
+}
+
+function calculateScratchStep(op,a,b){
+  if(!Number.isFinite(a) || !Number.isFinite(b)) return null;
+  if(op==='+') return a+b;
+  if(op==='-') return a-b;
+  if(op==='*') return a*b;
+  if(op==='/') return b===0 ? null : a/b;
+  return null;
+}
+
+function resolvedStepForScratch(question,index){
+  if(!question || !Array.isArray(question.s)) return null;
+  if(question.s[0]!=='steps') return index===0 ? question.s : null;
+  const steps=(question.s[1] || []).filter(step=>Array.isArray(step) && step[0]!=='note');
+  let previous=null;
+  for(let stepIndex=0;stepIndex<steps.length;stepIndex++){
+    const raw=steps[stepIndex];
+    const first=raw[1]===null ? previous : raw[1];
+    const second=raw[2]===null ? previous : raw[2];
+    const resolved=[raw[0],first,second];
+    if(stepIndex===index) return resolved;
+    previous=calculateScratchStep(raw[0],first,second);
+  }
+  return null;
 }
 
 function originalStepForChoice(question,index){
@@ -1858,7 +2178,7 @@ function stepChoiceData(spec,index,question){
     capacityConvert:{0:'Умножавам броя на литрите по 1000.',1:'Прибавям дадените милилитри.'},
     wordMul:{0:'Умножавам броя в една група по броя на групите.'},
     wordDiv:{0:'Разделям общото количество поравно на броя на групите.'},
-    moneyChange:{0:'Умножавам цената на една тетрадка по броя на тетрадките.',1:'Изваждам стойността на покупката от платената сума.'},
+    moneyChange:{0:'Умножавам цената на един продукт по броя на купените продукти.',1:'Изваждам стойността на покупката от дадената сума.'},
     tableRead:{0:'Събирам стойностите от посочените две колони.'},
     barChart:{0:'Изваждам по-малката стойност от по-голямата.'},
     missingSegment:{0:'Изваждам дължината на известната част от общата дължина.'},
@@ -1917,7 +2237,7 @@ function renderSteps(steps,question){
       <div class="step-question">❓ ${stepGuidingQuestion(item.spec,index)}</div>
       ${renderStepChoice(item.spec,index,question)}
       <div class="step-calculation" hidden>
-        ${renderSubPanel(item.spec)}
+        ${renderSubPanel(item.spec,question,index)}
         ${isLast?'':`<div class="step-next-row"><button type="button" class="step-next-btn" data-next-step="${index+1}">Готово — покажи следващата стъпка</button><span class="step-next-feedback" aria-live="polite"></span></div>`}
       </div>
     </div>`;
@@ -2026,6 +2346,23 @@ function wireScratchPanel(panelEl){
       wasFocusedBeforeTap=false;
     });
     syncValue();
+  });
+  panelEl.querySelectorAll('.division-dot-editable').forEach(cell=>{
+    const input=cell.querySelector('input');
+    let wasFocusedBeforeTap=false;
+    const syncValue=()=>{
+      if(input.value.trim()==='') cell.classList.remove('has-dot');
+    };
+    input.addEventListener('input',syncValue);
+    input.addEventListener('pointerdown',()=>{
+      wasFocusedBeforeTap=document.activeElement===input;
+    });
+    input.addEventListener('click',()=>{
+      if(wasFocusedBeforeTap && input.value.trim()!==''){
+        cell.classList.toggle('has-dot');
+      }
+      wasFocusedBeforeTap=false;
+    });
   });
   panelEl.querySelectorAll('.division-dot-toggle').forEach(digit=>{
     const toggleDot = ()=> digit.classList.toggle('has-dot');
@@ -2571,6 +2908,48 @@ function updateRevealed(){
   });
 }
 
+const BLOOM_LEVEL_UI={
+  remember:{
+    icon:'🧠',
+    title:'Запомням',
+    prompt:'Припомни си правилото, формулата или връзката между мерните единици, която ще ти е необходима.'
+  },
+  understand:{
+    icon:'💬',
+    title:'Разбирам',
+    prompt:'Кажи с твои думи какво е дадено и какво трябва да намериш.'
+  },
+  apply:{
+    icon:'🛠️',
+    title:'Прилагам',
+    prompt:'Избери подходящото правило и го приложи, за да пресметнеш точно.'
+  },
+  analyze:{
+    icon:'🔎',
+    title:'Анализирам',
+    prompt:'Открий важните данни, връзките между тях и подреди решението на стъпки.'
+  },
+  evaluate:{
+    icon:'⚖️',
+    title:'Оценявам',
+    prompt:'Направи приблизителна преценка. След пресмятането провери дали полученият отговор е разумен.'
+  },
+  create:{
+    icon:'✨',
+    title:'Създавам',
+    prompt:'Реши задачата, а после измисли подобна задача с други числа и обясни как се решава.'
+  }
+};
+
+function renderBloomStage(question){
+  const stage=document.getElementById('bloom-stage');
+  const level=question.bloom || 'apply';
+  const data=BLOOM_LEVEL_UI[level] || BLOOM_LEVEL_UI.apply;
+  stage.dataset.bloom=level;
+  stage.innerHTML=`<div class="bloom-stage-title"><span aria-hidden="true">${data.icon}</span><span>${data.title}</span></div>
+    <div class="bloom-stage-prompt">${data.prompt}</div>`;
+}
+
 function loadQuestion(){
   const day = DAYS[currentDay];
   if(currentQ >= day.questions.length){
@@ -2579,6 +2958,7 @@ function loadQuestion(){
   }
   wrongAttempts = 0;
   const q = day.questions[currentQ];
+  renderBloomStage(q);
   document.getElementById('question-text').textContent = q.t;
   const questionVisual = document.getElementById('question-visual');
   questionVisual.innerHTML = q.visual || '';
@@ -3232,6 +3612,19 @@ const TEN_EXTRA_TYPES = [
   'rightAngles','missingSegment','logicPattern','pictogram','multiCondition'
 ];
 
+const TEN_BLOOM_SEQUENCE=[
+  'remember',
+  'understand',
+  'apply',
+  'apply',
+  'analyze',
+  'apply',
+  'analyze',
+  'evaluate',
+  'apply',
+  'create'
+];
+
 function tenFmt(n){ return Number(n).toLocaleString('bg-BG'); }
 function tenQuestion(t,a,s,extra){ return Object.assign({t,a,s},extra||{}); }
 function tenNote(text){ return ['steps', [['note', text]]]; }
@@ -3430,23 +3823,43 @@ function tenGenerate(type,week,day){
   if(type==='multiCondition'){
     const boxes=randInt(3,7),perBox=randInt(8,22),added=randInt(10,35),given=randInt(5,Math.min(25,boxes*perBox+added-1));
     const answer=boxes*perBox+added-given;
-    return tenQuestion(`В ${boxes} кутии има по ${perBox} карти. Добавили още ${added} карти, а после подарили ${given}. Колко карти са останали?`,answer,['steps',[['*',boxes,perBox],['+',null,added],['-',null,given]]],{word:true,opSequence:['*','+','-']});
+    return tenQuestion(`За училищен клуб подготвили ${boxes} кутии с по ${perBox} карти. Добавили още ${added} карти, а след това подарили ${given} от всички карти. Колко карти останали?`,answer,['steps',[['*',boxes,perBox],['+',null,added],['-',null,given]]],{word:true,opSequence:['*','+','-']});
   }
   if(type==='wordDiv'){
-    b=randInt(2,9); q=randInt(4,35); total=b*q;
-    return tenQuestion(`${total} бонбона са разпределени поравно между ${b} деца. По колко бонбона получава всяко дете?`,q,['/',total,b],{word:true,opFor:'/'});
+    b=randInt(2,9); q=randInt(3,12); total=b*q;
+    return tenQuestion(`Учител разпределил поравно ${total} стикера между ${b} деца. По колко стикера получило всяко дете?`,q,['/',total,b],{word:true,opFor:'/'});
   }
   if(type==='wordMul'){
-    a=randInt(8,35); b=randInt(3,9);
-    return tenQuestion(`В една кутия има ${a} молива. Колко молива има в ${b} такива кутии?`,a*b,['*',a,b],{word:true,opFor:'*'});
+    const pencilsPerBox=[6,12,18,24];
+    a=pencilsPerBox[randInt(0,pencilsPerBox.length-1)]; b=randInt(2,6);
+    return tenQuestion(`Във всяка кутия има по ${a} цветни молива. Колко цветни молива има общо в ${b} такива кутии?`,a*b,['*',a,b],{word:true,opFor:'*'});
   }
   if(type==='moneyChange'){
-    price=randInt(6,38); count=randInt(2,8); total=price*count; paid=total+randInt(20,160);
-    return tenQuestion(`Една тетрадка струва ${price} лв. Купени са ${count} тетрадки и е платено с ${paid} лв. Колко лева трябва да се върнат?`,paid-total,['steps',[['*',price,count],['-',paid,null]]],{word:true,opSequence:['*','-']});
+    const purchases=[
+      {article:'Една',singular:'тетрадка',plural:'тетрадки',minPrice:3,maxPrice:8,maxCount:6},
+      {article:'Една',singular:'книга',plural:'книги',minPrice:8,maxPrice:18,maxCount:4},
+      {article:'Един',singular:'скицник',plural:'скицника',minPrice:5,maxPrice:12,maxCount:5},
+      {article:'Една',singular:'химикалка',plural:'химикалки',minPrice:2,maxPrice:6,maxCount:6}
+    ];
+    const purchase=purchases[randInt(0,purchases.length-1)];
+    price=randInt(purchase.minPrice,purchase.maxPrice);
+    count=randInt(2,purchase.maxCount);
+    total=price*count;
+    paid=[10,20,50,100,200].find(banknote=>banknote>total);
+    return tenQuestion(
+      `${purchase.article} ${purchase.singular} струва ${price} лв. Клиент купува ${count} ${purchase.plural} и плаща с банкнота от ${paid} лв. Колко лева ресто трябва да получи?`,
+      paid-total,
+      ['steps',[['*',price,count],['-',paid,null]]],
+      {
+        word:true,
+        opSequence:['*','-'],
+        purchase:{price,count,total,paid,item:purchase.singular}
+      }
+    );
   }
   if(type==='subWord'){
     a=randInt(250,900); b=randInt(60,a-30);
-    return tenQuestion(`В склад имало ${a} тетрадки. Използвали ${b} от тях. Колко тетрадки останали?`,a-b,['-',a,b],{word:true,opFor:'-'});
+    return tenQuestion(`В училищния склад имало ${a} тетрадки. За часовете раздали ${b} от тях. Колко тетрадки останали в склада?`,a-b,['-',a,b],{word:true,opFor:'-'});
   }
   a=randInt(120,300);
   b=randInt(20,Math.min(110,a-20));
@@ -3498,6 +3911,10 @@ function tenQuestionsFor(weekIndex,dayIndex){
     const j=randInt(0,i);
     [questions[i],questions[j]]=[questions[j],questions[i]];
   }
+  questions.forEach((question,index)=>{
+    question.bloom=TEN_BLOOM_SEQUENCE[index] || 'apply';
+    question.bloomPosition=index+1;
+  });
   return questions;
 }
 
