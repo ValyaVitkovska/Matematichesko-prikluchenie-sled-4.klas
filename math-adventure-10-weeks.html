@@ -750,7 +750,14 @@
     bottom:-5px;
     font-size:1.05rem;
   }
-  .geo-coach-text{ line-height:1.25; font-size:.82rem; font-weight:800; }
+  .geo-coach-text{
+    flex:1 1 auto;
+    min-width:0;
+    line-height:1.3;
+    font-size:.82rem;
+    font-weight:800;
+    overflow-wrap:normal;
+  }
   .geo-coach-text strong{ display:block; color:#138f83; font-size:.9rem; }
   .geo-coach-message{ display:inline; }
   .geo-coach-word{
@@ -761,12 +768,15 @@
   .geo-coach-word:last-child{ margin-right:0; }
   .geo-coach-letter{
     display:inline-block;
+    opacity:1;
+  }
+  .geo-coach.typing .geo-coach-letter{
     opacity:0;
     animation:geo-letter-appear 1ms steps(1,end) forwards;
-    animation-delay:calc(var(--geo-letter-index) * 48ms);
+    animation-delay:calc(var(--geo-letter-index) * 26ms);
     animation-play-state:paused;
   }
-  .step-calculation:not([hidden]) .geo-coach-letter{
+  .step-calculation:not([hidden]) .geo-coach.typing .geo-coach-letter{
     animation-play-state:running;
   }
   @keyframes geo-letter-appear{
@@ -1946,10 +1956,20 @@ function renderGeoCoach(){
     letterIndex++;
     return `<span class="geo-coach-word">${letters}</span>`;
   }).join('');
-  return `<div class="geo-coach" role="note" aria-label="Съвет от Гео">
+  return `<div class="geo-coach typing" role="note" aria-label="Съвет от Гео">
     <span class="geo-coach-avatar" aria-hidden="true"><img src="./assets/geo.png" alt=""><span class="geo-coach-calculator">🧮</span></span>
     <span class="geo-coach-text" aria-label="Гео: ${message}"><strong aria-hidden="true">Гео:</strong><span class="geo-coach-message" aria-hidden="true">${animatedMessage}</span></span>
   </div>`;
+}
+
+function completeGeoCoachTyping(calculation){
+  const coach=calculation && calculation.querySelector('.geo-coach');
+  if(!coach) return;
+  coach.classList.remove('typing');
+  void coach.offsetWidth;
+  coach.classList.add('typing');
+  const letters=coach.querySelectorAll('.geo-coach-letter').length;
+  window.setTimeout(()=>coach.classList.remove('typing'),letters*26+180);
 }
 
 function renderNotebookMultiplication(a,b,templateA=a,templateB=b){
@@ -2398,6 +2418,7 @@ function wireScratchPanel(panelEl){
       feedback.textContent='Точно така! Сега извърши пресмятането.';
       calculation.hidden=false;
       calculation.classList.add('revealed');
+      completeGeoCoachTyping(calculation);
       const firstInput=calculation.querySelector('.step-operand-input, .step-result-input, input');
       if(firstInput) firstInput.focus();
     });
